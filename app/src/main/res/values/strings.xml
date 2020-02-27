@@ -4,10 +4,11 @@
     <string name="todo">todo</string>
     <string name="title_hint">Title</string>
     <string name="description_hint">Description</string>
-    <string name="upload_file">Upload</string>
+    <string name="upload_file">Encrypt/Upload</string>
     <string name="save_menu">Save</string>
     <string name="add_file">Add File</string>
     <string name="log_out">Log Out</string>
     <string name="deleteFileInfo">Delete Info</string>
     <string name="textview">TextView</string>
+    <string name="decrypt">Read</string>
 </resources>

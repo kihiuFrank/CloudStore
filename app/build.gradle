@@ -40,5 +40,8 @@ dependencies {
     //firebase ui
     implementation 'com.firebaseui:firebase-ui-auth:6.2.0'
 
+    //request runtime permission
+    implementation 'com.karumi:dexter:5.0.0'
+
 }
 apply plugin: 'com.google.gms.google-services'
