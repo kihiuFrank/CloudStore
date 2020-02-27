@@ -9,4 +9,5 @@
     <string name="add_file">Add File</string>
     <string name="log_out">Log Out</string>
     <string name="deleteFileInfo">Delete Info</string>
+    <string name="textview">TextView</string>
 </resources>
