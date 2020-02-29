@@ -223,7 +223,7 @@ public class FilesActivity extends AppCompatActivity {
             int width = Resources.getSystem().getDisplayMetrics().widthPixels;
             Picasso.with(this)
                     .load(url)
-                    .resize(width, width*2/3)
+                    .resize(width, width*3/3)
                     .centerCrop()
                     .into(imageView);
         }
