@@ -9,6 +9,8 @@ import com.firebase.ui.auth.AuthUI;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,6 +21,8 @@ public class FirebaseUtil {
     public static DatabaseReference databaseReference;
     private static FirebaseUtil firebaseUtil;
     public static FirebaseAuth firebaseAuth;
+    public static FirebaseStorage storage;
+    public static StorageReference storageReference;
     public static FirebaseAuth.AuthStateListener authStateListener;
     public static ArrayList<FileInfo> fileInfos;
     private static final int RC_SIGN_IN = 123;
@@ -41,6 +45,7 @@ public class FirebaseUtil {
                     //Toast.makeText(callerActivity.getBaseContext(), "Welcome!!", Toast.LENGTH_SHORT).show();
                 }
             };
+            connectStorage();
         }
         fileInfos = new ArrayList<FileInfo>();
         databaseReference = firebaseDatabase.getReference().child(ref);
@@ -67,5 +72,10 @@ public class FirebaseUtil {
 
     public static void dettachAuthListener() {
         firebaseAuth.removeAuthStateListener(authStateListener);
+    }
+
+    public static void connectStorage() {
+        storage = FirebaseStorage.getInstance();
+        storageReference= storage.getReference().child("encrypted_files");
     }
 }
