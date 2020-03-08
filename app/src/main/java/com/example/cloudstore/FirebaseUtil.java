@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 
 import com.firebase.ui.auth.AuthUI;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
@@ -27,15 +28,18 @@ public class FirebaseUtil {
     public static ArrayList<FileInfo> fileInfos;
     private static final int RC_SIGN_IN = 123;
     private static Activity caller;
+    private static String uid;
 
     private FirebaseUtil(){}
 
-    public static void openFbReference (String ref, final Activity callerActivity) {
+    public static void openFbReference (String uid, String ref, final Activity callerActivity) {
+
         if (firebaseUtil == null) {
             firebaseUtil =new FirebaseUtil();
             firebaseDatabase = FirebaseDatabase.getInstance();
             firebaseAuth = FirebaseAuth.getInstance();
             caller = callerActivity;
+
             authStateListener = new FirebaseAuth.AuthStateListener() {
                 @Override
                 public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
@@ -47,8 +51,14 @@ public class FirebaseUtil {
             };
             connectStorage();
         }
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            uid = user.getUid();
+            databaseReference = firebaseDatabase.getReference().child(uid).child("encryptedFiles");
+        }
         fileInfos = new ArrayList<FileInfo>();
-        databaseReference = firebaseDatabase.getReference().child(ref);
+
+
     }
 
     public static void signUp() {
@@ -70,7 +80,7 @@ public class FirebaseUtil {
         firebaseAuth.addAuthStateListener(authStateListener);
     }
 
-    public static void dettachAuthListener() {
+    public static void detachAuthListener() {
         firebaseAuth.removeAuthStateListener(authStateListener);
     }
 

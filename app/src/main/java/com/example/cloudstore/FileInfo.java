@@ -8,19 +8,18 @@ public class FileInfo implements Serializable {
     private String title;
     private String description;
     private String fileUrl;
-    private String fileName;
+
 
     public FileInfo() {
 
     }
 
 
-    public FileInfo(String title, String description, String fileUrl, String fileName) {
+    public FileInfo(String title, String description, String fileUrl) {
         this.setId(id);
         this.setTitle(title);
         this.setDescription(description);
         this.setFileUrl(fileUrl);
-        this.setFileName(fileName);
     }
 
     public String getId() {
@@ -53,9 +52,5 @@ public class FileInfo implements Serializable {
 
     public void setFileUrl(String fileUrl) {
         this.fileUrl = fileUrl;
-    }
-
-    public void setFileName(String imageName) {
-        this.fileName = imageName;
     }
 }

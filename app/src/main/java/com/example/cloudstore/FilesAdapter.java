@@ -12,6 +12,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -27,6 +29,7 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FilesViewHol
     private FirebaseDatabase firebaseDatabase;
     private DatabaseReference databaseReference;
     private ChildEventListener childEventListener;
+    private static String uid;
 
 
     public FilesAdapter() {
@@ -34,14 +37,18 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FilesViewHol
         firebaseDatabase = FirebaseUtil.firebaseDatabase;
         databaseReference = FirebaseUtil.databaseReference;
         arrayFileInfo = FirebaseUtil.fileInfos;
+
         childEventListener = new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
                 FileInfo fileInfo = dataSnapshot.getValue(FileInfo.class);
-                Log.d("File", fileInfo.getTitle() );
-                fileInfo.setId(dataSnapshot.getKey());
-                arrayFileInfo.add(fileInfo);
-                notifyItemInserted(arrayFileInfo.size()-1);
+                if (fileInfo != null) {
+//                    Log.d("File", fileInfo.getTitle());
+                    fileInfo.setId(dataSnapshot.getKey());
+                    arrayFileInfo.add(fileInfo);
+                    notifyItemInserted(arrayFileInfo.size()-1);
+                }
+
 
             }
 
@@ -65,7 +72,12 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.FilesViewHol
 
             }
         };
-        databaseReference.addChildEventListener(childEventListener);
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            uid = user.getUid();
+            databaseReference.addChildEventListener(childEventListener);
+        }
+
     }
 
     @NonNull

@@ -1,6 +1,8 @@
 package com.example.cloudstore;
 
 import android.Manifest;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.net.Uri;
@@ -22,7 +24,9 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-import android.util.Log;
+import android.text.InputType;
+import android.view.ContextThemeWrapper;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -32,6 +36,9 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class FilesActivity extends AppCompatActivity {
     private FirebaseDatabase firebaseDatabase;
@@ -41,6 +48,8 @@ public class FilesActivity extends AppCompatActivity {
     FileInfo fileInfo;
     Button btnEncrypt, btnDecrypt;
     ImageView imageView;
+    private String mText = "";
+    private static final int MY_PASSWORD_DIALOG_ID = 4;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,7 +62,7 @@ public class FilesActivity extends AppCompatActivity {
         firebaseDatabase = FirebaseUtil.firebaseDatabase;
         databaseReference = FirebaseUtil.databaseReference;
 
-        textTitle = findViewById(R.id.tvTitle);
+        textTitle = findViewById(R.id.ed_read_dialog);
         textDescription = findViewById(R.id.tvDescription);
         btnEncrypt = findViewById(R.id.btn_upload);
         btnDecrypt = findViewById(R.id.btn_read);
@@ -83,6 +92,48 @@ public class FilesActivity extends AppCompatActivity {
             }
         });
 
+        btnDecrypt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(FilesActivity.this);
+                builder.setTitle("Enter Password");
+
+                // Set up the input
+                final EditText input = new EditText(FilesActivity.this);
+                // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+                input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+
+                builder.setView(input);
+
+                if (input.getText().toString().isEmpty()) {
+                    input.setError("Field can't be empty!!");
+                }
+
+                // Set up the buttons
+                builder.setPositiveButton(R.string.dialog_ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                       if (input.getText().toString().length()<8 && !isValidPassword(input.getText().toString())) {
+                           input.setError("Weak Password!!");
+                        } else {
+
+                            mText = input.getText().toString();
+                        }
+                    }
+                });
+                builder.setNegativeButton(R.string.dialog_cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+
+                builder.show();
+            }
+        });
+
         Dexter.withActivity(this).withPermissions(Manifest.permission.READ_EXTERNAL_STORAGE,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 .withListener(new MultiplePermissionsListener() {
@@ -100,51 +151,62 @@ public class FilesActivity extends AppCompatActivity {
 
     }
 
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == FILE_RESULT ) {
-            Uri fileUri = data.getData();
-            final StorageReference reference = FirebaseUtil.storageReference.child(fileUri.getLastPathSegment());
-            reference.putFile(fileUri).addOnSuccessListener(this, new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+            Uri fileUri = null;
+            if (data != null) {
+                fileUri = data.getData();
+                assert fileUri != null;
+                final StorageReference reference = FirebaseUtil.storageReference.child(Objects.requireNonNull(fileUri.getLastPathSegment()));
+                reference.putFile(fileUri).addOnSuccessListener(this, new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
 /*
                     String url = taskSnapshot.getStorage().getDownloadUrl().toString();
                     fileInfo.setFileUrl(url);
                     showImage(url);*/
-                    reference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                        @Override
-                        public void onSuccess(Uri uri) {
-                            fileInfo.setFileUrl(uri.toString());
-                            showImage(uri.toString());
-                        }
-                    });
+                        reference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+                                fileInfo.setFileUrl(uri.toString());
+                                showImage(uri.toString());
+                            }
+                        });
 
-                }
-            });
+                    }
+                });
+            }
+
         }
 
-        if (resultCode == RESULT_OK) {
-            Uri fileUri = data.getData();
-            final StorageReference reference = FirebaseUtil.storageReference.child(fileUri.getLastPathSegment());
-            reference.putFile(fileUri).addOnSuccessListener(this, new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-
-/*                    String url = taskSnapshot.getStorage().getDownloadUrl().toString();
+        if (requestCode == RESULT_OK ) {
+            Uri fileUri = null;
+            if (data != null) {
+                fileUri = data.getData();
+                assert fileUri != null;
+                final StorageReference reference = FirebaseUtil.storageReference.child(Objects.requireNonNull(fileUri.getLastPathSegment()));
+                reference.putFile(fileUri).addOnSuccessListener(this, new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+/*
+                    String url = taskSnapshot.getStorage().getDownloadUrl().toString();
                     fileInfo.setFileUrl(url);
                     showImage(url);*/
-                    reference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                        @Override
-                        public void onSuccess(Uri uri) {
-                            fileInfo.setFileUrl(uri.toString());
-                            showImage(uri.toString());
-                        }
-                    });
+                        reference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+                                fileInfo.setFileUrl(uri.toString());
+                                showImage(uri.toString());
+                            }
+                        });
 
-                }
-            });
+                    }
+                });
+            }
+
         }
     }
 
@@ -227,6 +289,17 @@ public class FilesActivity extends AppCompatActivity {
                     .centerCrop()
                     .into(imageView);
         }
+    }
+
+    public static boolean isValidPassword(final String password) {
+
+        Pattern pattern;
+        Matcher matcher;
+        final String PASSWORD_PATTERN = "^(?=.*[0-9])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\\S+$).{4,}$";
+        pattern = Pattern.compile(PASSWORD_PATTERN);
+        matcher = pattern.matcher(password);
+
+        return matcher.matches();
     }
 
 

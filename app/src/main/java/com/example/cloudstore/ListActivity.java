@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -26,6 +27,8 @@ public class ListActivity extends AppCompatActivity {
     private FirebaseDatabase firebaseDatabase;
     private DatabaseReference databaseReference;
     private ChildEventListener childEventListener;
+    private static final String TAG = "ListActivity";
+    private static String uid;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,9 +59,10 @@ public class ListActivity extends AppCompatActivity {
                             public void onComplete(@NonNull Task<Void> task) {
                                 Log.d("Log out", "User Logged out");
                                 FirebaseUtil.attachAuthListener();
+                                Toast.makeText(ListActivity.this, "Logged out successfully", Toast.LENGTH_SHORT).show();
                             }
                         });
-                FirebaseUtil.dettachAuthListener();
+                FirebaseUtil.detachAuthListener();
                 return true;
 
         }
@@ -68,13 +72,14 @@ public class ListActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        FirebaseUtil.dettachAuthListener();
+        FirebaseUtil.detachAuthListener();
     }
 
     @Override
     protected void onPostResume() {
         super.onPostResume();
-        FirebaseUtil.openFbReference("encryptedFiles", this);
+        Log.d( TAG,"Resumed");
+        FirebaseUtil.openFbReference(uid, "encryptedFiles", this);
 
         RecyclerView rvFiles  = findViewById(R.id.rv_files);
         final FilesAdapter adapter = new FilesAdapter();
