@@ -33,6 +33,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.Toast;
 
 import java.util.List;
@@ -50,6 +51,7 @@ public class FilesActivity extends AppCompatActivity {
     ImageView imageView;
     private String mText = "";
     private static final int MY_PASSWORD_DIALOG_ID = 4;
+    private EditText input;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,53 +86,23 @@ public class FilesActivity extends AppCompatActivity {
         btnEncrypt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                intent.setType("image/jpeg");
-                intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true) ;
-                startActivityForResult(Intent.createChooser(intent,
-                        "Insert File"), FILE_RESULT);
+                if (input == null) {
+                    dialogEncrypt();
+                } else {
+                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                    intent.setType("*/*");
+                    intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
+                    startActivityForResult(Intent.createChooser(intent,
+                            "Insert File"), FILE_RESULT);
+                }
+
             }
         });
 
         btnDecrypt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-
-                AlertDialog.Builder builder = new AlertDialog.Builder(FilesActivity.this);
-                builder.setTitle("Enter Password");
-
-                // Set up the input
-                final EditText input = new EditText(FilesActivity.this);
-                // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
-                input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-
-                builder.setView(input);
-
-                if (input.getText().toString().isEmpty()) {
-                    input.setError("Field can't be empty!!");
-                }
-
-                // Set up the buttons
-                builder.setPositiveButton(R.string.dialog_ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                       if (input.getText().toString().length()<8 && !isValidPassword(input.getText().toString())) {
-                           input.setError("Weak Password!!");
-                        } else {
-
-                            mText = input.getText().toString();
-                        }
-                    }
-                });
-                builder.setNegativeButton(R.string.dialog_cancel, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.cancel();
-                    }
-                });
-
-                builder.show();
+                dialogRead();
             }
         });
 
@@ -301,6 +273,88 @@ public class FilesActivity extends AppCompatActivity {
 
         return matcher.matches();
     }
+
+    public void dialogRead (){
+        AlertDialog.Builder builder = new AlertDialog.Builder(FilesActivity.this);
+        builder.setTitle("Enter Password");
+
+        // Set up the input
+        input = new EditText(FilesActivity.this);
+        // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+
+        builder.setView(input);
+
+        if (input.getText().toString().isEmpty()) {
+            input.setError("Field can't be empty!!");
+        }
+
+        // Set up the buttons
+        builder.setPositiveButton(R.string.dialog_ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (input.getText().toString().length()<8 && !isValidPassword(input.getText().toString())) {
+                    input.setError("Weak Password!!");
+                } else {
+
+                    mText = input.getText().toString();
+                }
+            }
+        });
+        builder.setNegativeButton(R.string.dialog_cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+
+    }
+
+    public void dialogEncrypt (){
+        AlertDialog.Builder builder = new AlertDialog.Builder(FilesActivity.this);
+        builder.setTitle("Enter Password");
+
+        // Set up the input
+        input = new EditText(FilesActivity.this);
+        // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+
+        builder.setView(input);
+
+        if (input.getText().toString().isEmpty()) {
+            input.setError("Field can't be empty!!");
+        }
+
+        // Set up the buttons
+        builder.setPositiveButton(R.string.dialog_ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (input.getText().toString().length()<8 && !isValidPassword(input.getText().toString())) {
+                    input.setError("Weak Password!!");
+                } else {
+                    mText = input.getText().toString();
+
+                }
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("*/*");
+                intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
+                startActivityForResult(Intent.createChooser(intent,
+                        "Insert File"), FILE_RESULT);
+            }
+        });
+        builder.setNegativeButton(R.string.dialog_cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+
+    }
+
 
 
 }
