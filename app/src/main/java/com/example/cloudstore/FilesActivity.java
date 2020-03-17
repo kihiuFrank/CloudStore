@@ -24,24 +24,28 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.text.Editable;
 import android.text.InputType;
-import android.view.ContextThemeWrapper;
-import android.view.LayoutInflater;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.Switch;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class FilesActivity extends AppCompatActivity {
+    private static final String TAG = "FilesActivity";
+
     private FirebaseDatabase firebaseDatabase;
     private DatabaseReference databaseReference;
     EditText textTitle, textDescription;
@@ -49,9 +53,13 @@ public class FilesActivity extends AppCompatActivity {
     FileInfo fileInfo;
     Button btnEncrypt, btnDecrypt;
     ImageView imageView;
-    private String mText = "";
+    private String mTextDecrypt = "";
+    private String mTextEncrypt = "";
     private static final int MY_PASSWORD_DIALOG_ID = 4;
-    private EditText input;
+    private EditText inputEncrypt,inputDecrypt;
+    private String url;
+    private HashMap<String, byte[]> mapUri;
+    private String password;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,13 +88,13 @@ public class FilesActivity extends AppCompatActivity {
         this.fileInfo = fileInfo;
         textTitle.setText(fileInfo.getTitle());
         textDescription.setText(fileInfo.getDescription());
-        showImage(fileInfo.getFileUrl());
+        //showImage(fileInfo.getFileUrl());
 
 
         btnEncrypt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (input == null) {
+                if (inputEncrypt == null) {
                     dialogEncrypt();
                 } else {
                     Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
@@ -102,7 +110,12 @@ public class FilesActivity extends AppCompatActivity {
         btnDecrypt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dialogRead();
+                    dialogRead();
+/*                    byte[] decrypted = decryptData(mapUri, mTextDecrypt);
+                if (decrypted != null) {
+                    Uri uriDecrypt = new Uri(decrypted);
+                }*/
+
             }
         });
 
@@ -120,9 +133,7 @@ public class FilesActivity extends AppCompatActivity {
                         Toast.makeText(FilesActivity.this, "You must enable permissions", Toast.LENGTH_SHORT).show();
                     }
                 }).check();
-
     }
-
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -143,6 +154,7 @@ public class FilesActivity extends AppCompatActivity {
                         reference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                             @Override
                             public void onSuccess(Uri uri) {
+                                url = uri.toString();
                                 fileInfo.setFileUrl(uri.toString());
                                 showImage(uri.toString());
                             }
@@ -221,6 +233,7 @@ public class FilesActivity extends AppCompatActivity {
     private void saveFile() {
         fileInfo.setTitle(textTitle.getText().toString());
         fileInfo.setDescription(textDescription.getText().toString());
+        fileInfo.setEncryptPassword(inputEncrypt.getText().toString());
 
         if (fileInfo.getId() == null) {
             databaseReference.push().setValue(fileInfo);
@@ -279,25 +292,23 @@ public class FilesActivity extends AppCompatActivity {
         builder.setTitle("Enter Password");
 
         // Set up the input
-        input = new EditText(FilesActivity.this);
+        inputDecrypt = new EditText(FilesActivity.this);
         // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
-        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-
-        builder.setView(input);
-
-        if (input.getText().toString().isEmpty()) {
-            input.setError("Field can't be empty!!");
-        }
+        inputDecrypt.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
 
         // Set up the buttons
         builder.setPositiveButton(R.string.dialog_ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                if (input.getText().toString().length()<8 && !isValidPassword(input.getText().toString())) {
-                    input.setError("Weak Password!!");
-                } else {
 
-                    mText = input.getText().toString();
+                password =  fileInfo.getEncryptPassword();
+                Log.d(TAG, "onCreate: password is " + password);
+                if ((mTextDecrypt.equals(password))) {
+                    //do something
+                    //showImage(url);
+                    showImage(fileInfo.getFileUrl());
+                } else {
+                    Toast.makeText(FilesActivity.this, "Wrong Password!!", Toast.LENGTH_LONG).show();
                 }
             }
         });
@@ -308,8 +319,60 @@ public class FilesActivity extends AppCompatActivity {
             }
         });
 
-        builder.show();
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT
+        );
+        inputDecrypt.setLayoutParams(lp);
 
+        builder.setView(inputDecrypt);
+        final AlertDialog dialog = builder.create();
+        dialog.show();
+
+        // Initially disable the button
+        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+
+            @Override
+            public void onShow(DialogInterface dialog) {
+                if (inputDecrypt.getText().toString().isEmpty()) {
+                    inputDecrypt.setError("Field can't be empty!!");
+                    ((AlertDialog)dialog).getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
+                }
+            }
+        });
+
+        inputDecrypt.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                //validating input
+                if (inputDecrypt.getText().toString().isEmpty()) {
+                    inputDecrypt.setError("Field can't be empty!!");
+                    // Disable ok button
+                    dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
+                } else if (inputDecrypt.getText().toString().length()<8 && !isValidPassword(inputDecrypt.getText().toString())) {
+                    inputDecrypt.setError("Weak Password!!");
+                    // Disable ok button
+                    dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
+                } else {
+                    // Input validated. Enable the button.
+                    dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
+                    mTextDecrypt = inputDecrypt.getText().toString();
+
+                /*showImage(url);
+                showImage(fileInfo.getFileUrl());*/
+                }
+            }
+        });
     }
 
     public void dialogEncrypt (){
@@ -317,26 +380,15 @@ public class FilesActivity extends AppCompatActivity {
         builder.setTitle("Enter Password");
 
         // Set up the input
-        input = new EditText(FilesActivity.this);
+        inputEncrypt = new EditText(FilesActivity.this);
+
         // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
-        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-
-        builder.setView(input);
-
-        if (input.getText().toString().isEmpty()) {
-            input.setError("Field can't be empty!!");
-        }
+        inputEncrypt.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
 
         // Set up the buttons
         builder.setPositiveButton(R.string.dialog_ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                if (input.getText().toString().length()<8 && !isValidPassword(input.getText().toString())) {
-                    input.setError("Weak Password!!");
-                } else {
-                    mText = input.getText().toString();
-
-                }
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                 intent.setType("*/*");
                 intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
@@ -351,10 +403,55 @@ public class FilesActivity extends AppCompatActivity {
             }
         });
 
-        builder.show();
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT
+        );
+        inputEncrypt.setLayoutParams(lp);
 
+        builder.setView(inputEncrypt);
+        final AlertDialog dialog = builder.create();
+        dialog.show();
+
+        // Initially disable the button
+        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface dialog) {
+                if (inputEncrypt.getText().toString().isEmpty()) {
+                    inputEncrypt.setError("Field can't be empty!!");
+                    ((AlertDialog)dialog).getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
+                }
+            }
+        });
+
+        inputEncrypt.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                //validating input
+                if (inputEncrypt.getText().toString().isEmpty()) {
+                    inputEncrypt.setError("Field can't be empty!!");
+                    // Disable ok button
+                    dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
+                } else if (inputEncrypt.getText().toString().length()<8 && !isValidPassword(inputEncrypt.getText().toString())) {
+                    inputEncrypt.setError("Weak Password!!");
+                    // Disable ok button
+                    dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
+                } else {
+                    // Input validated. Enable the button.
+                    dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
+                    mTextEncrypt = inputEncrypt.getText().toString();
+                }
+            }
+        });
     }
-
-
-
 }
