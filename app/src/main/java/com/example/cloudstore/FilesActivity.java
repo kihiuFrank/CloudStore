@@ -27,6 +27,7 @@ import androidx.appcompat.widget.Toolbar;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
+import android.text.util.Linkify;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -35,6 +36,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.HashMap;
@@ -60,6 +62,7 @@ public class FilesActivity extends AppCompatActivity {
     private String url;
     private HashMap<String, byte[]> mapUri;
     private String password;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -266,7 +269,7 @@ public class FilesActivity extends AppCompatActivity {
     }
 
     private void showImage(String url) {
-        if (url != null && url.isEmpty() == false){
+        if (url != null && !url.isEmpty()){
             int width = Resources.getSystem().getDisplayMetrics().widthPixels;
             Picasso.with(this)
                     .load(url)
@@ -453,5 +456,14 @@ public class FilesActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    public void onClick(View view) {
+        Intent email = new Intent(Intent.ACTION_SEND);
+        email.putExtra(Intent.EXTRA_EMAIL, new String[]{"franklinekihiu@gmail.com"});
+        email.putExtra(Intent.EXTRA_SUBJECT, "subject");
+        email.putExtra(Intent.EXTRA_TEXT, "message");
+        email.setType("message/rfc822");
+        startActivity(Intent.createChooser(email, "Choose an Email client :"));
     }
 }
