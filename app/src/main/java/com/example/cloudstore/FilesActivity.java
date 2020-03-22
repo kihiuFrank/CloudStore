@@ -97,15 +97,7 @@ public class FilesActivity extends AppCompatActivity {
         btnEncrypt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (inputEncrypt == null) {
-                    dialogEncrypt();
-                } else {
-                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                    intent.setType("*/*");
-                    intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
-                    startActivityForResult(Intent.createChooser(intent,
-                            "Insert File"), FILE_RESULT);
-                }
+                dialogEncrypt();
 
             }
         });
@@ -236,7 +228,7 @@ public class FilesActivity extends AppCompatActivity {
     private void saveFile() {
         fileInfo.setTitle(textTitle.getText().toString());
         fileInfo.setDescription(textDescription.getText().toString());
-        fileInfo.setEncryptPassword(inputEncrypt.getText().toString());
+
 
         if (fileInfo.getId() == null) {
             databaseReference.push().setValue(fileInfo);
@@ -292,7 +284,7 @@ public class FilesActivity extends AppCompatActivity {
 
     public void dialogRead (){
         AlertDialog.Builder builder = new AlertDialog.Builder(FilesActivity.this);
-        builder.setTitle("Enter Password");
+        builder.setTitle("Enter Secret Code");
 
         // Set up the input
         inputDecrypt = new EditText(FilesActivity.this);
@@ -311,7 +303,7 @@ public class FilesActivity extends AppCompatActivity {
                     //showImage(url);
                     showImage(fileInfo.getFileUrl());
                 } else {
-                    Toast.makeText(FilesActivity.this, "Wrong Password!!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(FilesActivity.this, "Wrong Password!!", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -380,7 +372,7 @@ public class FilesActivity extends AppCompatActivity {
 
     public void dialogEncrypt (){
         AlertDialog.Builder builder = new AlertDialog.Builder(FilesActivity.this);
-        builder.setTitle("Enter Password");
+        builder.setTitle("Enter Secret Code");
 
         // Set up the input
         inputEncrypt = new EditText(FilesActivity.this);
@@ -392,11 +384,18 @@ public class FilesActivity extends AppCompatActivity {
         builder.setPositiveButton(R.string.dialog_ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                intent.setType("*/*");
-                intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
-                startActivityForResult(Intent.createChooser(intent,
-                        "Insert File"), FILE_RESULT);
+                if (inputEncrypt.length()<8 && inputEncrypt == null) {
+                    Toast.makeText(FilesActivity.this, "Password Can't be empty!", Toast.LENGTH_SHORT).show();
+                }else {
+                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                    intent.setType("*/*");
+                    intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
+                    startActivityForResult(Intent.createChooser(intent,
+                            "Insert File"), FILE_RESULT);
+                }fileInfo.setEncryptPassword(inputEncrypt.getText().toString());
+
+
+
             }
         });
         builder.setNegativeButton(R.string.dialog_cancel, new DialogInterface.OnClickListener() {
@@ -461,8 +460,8 @@ public class FilesActivity extends AppCompatActivity {
     public void onClick(View view) {
         Intent email = new Intent(Intent.ACTION_SEND);
         email.putExtra(Intent.EXTRA_EMAIL, new String[]{"franklinekihiu@gmail.com"});
-        email.putExtra(Intent.EXTRA_SUBJECT, "subject");
-        email.putExtra(Intent.EXTRA_TEXT, "message");
+        email.putExtra(Intent.EXTRA_SUBJECT, "Enter Subject Here");
+        email.putExtra(Intent.EXTRA_TEXT, "Whats the message?");
         email.setType("message/rfc822");
         startActivity(Intent.createChooser(email, "Choose an Email client :"));
     }

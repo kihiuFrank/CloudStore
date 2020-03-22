@@ -4,8 +4,8 @@
     <color name="colorPrimaryDark">#B1006A</color>
     <color name="colorAccent">#FA8100</color>-->
 
-    <color name="colorPrimary">#6200EE</color>
-    <color name="colorPrimaryDark">#3700B3</color>
-    <color name="colorAccent">#BB86FC</color>
+    <color name="colorPrimary">#6A2460</color>
+    <color name="colorPrimaryDark">#370530</color>
+    <color name="colorAccent">#ED51A6</color>
     <color name="textColor">#000000</color>
 </resources>

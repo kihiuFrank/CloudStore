@@ -86,7 +86,7 @@
 
             <Button
                 android:id="@+id/btn_upload"
-                android:layout_width="186dp"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="8dp"
@@ -101,7 +101,7 @@
 
             <Button
                 android:id="@+id/btn_read"
-                android:layout_width="201dp"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
@@ -117,21 +117,22 @@
 
             <TextView
                 android:id="@+id/tvSupport"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="60dp"
                 android:layout_marginTop="32dp"
                 android:layout_marginEnd="60dp"
                 android:layout_marginBottom="16dp"
-                android:onClick="onClick"
                 android:clickable="true"
+                android:focusable="true"
+                android:onClick="onClick"
                 android:text="@string/contact"
-                android:textColor="@color/colorAccent"
+                android:textColor="@color/colorPrimaryDark"
+                android:textSize="16sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/btn_read"
-                android:focusable="true" />
+                app:layout_constraintTop_toBottomOf="@+id/btn_read" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
