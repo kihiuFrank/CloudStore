@@ -30,7 +30,7 @@
                 android:contentDescription="@string/todo"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/iconimage" />
+                app:srcCompat="@drawable/icon" />
 
             <TextView
                 android:id="@+id/tv_title"

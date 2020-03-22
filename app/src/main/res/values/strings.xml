@@ -15,4 +15,6 @@
     <string name="dialog_ok">OK</string>
     <string name="enter_password_dialog">Enter Password</string>
     <string name="contact">Forgot password? Contact Support </string>
+    <string name="splach_text">Ficha Siri na CloudSiri</string>
+    <string name="icon">icon</string>
 </resources>
